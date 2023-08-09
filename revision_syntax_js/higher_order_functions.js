@@ -1,3 +1,13 @@
+function isEven(n) {
+  if (n == 0) {
+    return true;
+  } else if (n == 1) {
+    return false;
+  } else {
+    return isEven(Math.abs(n - 2));
+  }
+}
+
 /* Abstraction
 
 doing something == function 
@@ -172,9 +182,71 @@ function map(array, transform) {
 }
 
 // je trie tous les multiples de 3 entre 0 et 26 et je les divise par 3
+
 console.log(
   map(
     filter(my_array(26), (val) => isMultiple3(val)),
     (s) => s / 3
   )
 );
+
+/* 
+    Transforming with map
+
+The map method transforms an array by applying a function to all of
+its elements and building a new array from the returned values. The
+new array will have the same length as the input array, but its content
+will have been mapped to a new form by the function.
+
+
+*/
+
+let tab = filter(my_array(26), isEven);
+console.log(tab);
+let map_filter = map(tab, (e) => e / 2);
+console.log(map_filter);
+
+/*
+
+    Summarizing with reduce
+Another common thing to do with arrays is to compute a single value
+from them. Our recurring example, summing a collection of numbers,
+is an instance of this. Another example is finding the script with the
+most characters.
+The higher-order operation that represents this pattern is called reduce (sometimes also called fold). It builds a value by repeatedly taking a single element from the array and combining it with the current
+value. When summing numbers, you’d start with the number zero and,
+for each element, add that to the sum.
+
+The parameters to reduce are, apart from the array, a combining
+function and a start value. This function is a little less straightforward
+than filter and map, so take a close look at it
+
+
+*/
+
+function reduce(array, combine, start) {
+  let current = start;
+  for (let element of array) {
+    current = combine(current, element);
+  }
+  return current;
+}
+console.log(reduce([1, 2, 3, 4], (a, b) => a + b, 0)); // 10
+
+/*
+
+  The standard array method reduce, which of course corresponds to
+this function, has an added convenience. If your array contains at least
+one element, you are allowed to leave off the start argument. The
+method will take the first element of the array as its start value and
+start reducing at the second element.
+
+
+*/
+console.log([1, 2, 3, 4].reduce((a, b) => a + b));
+
+
+let my_char = "je me debrouille en javascript";
+console.log(my_char.split(" ").length);
+
+console.log(my_char.split(" ").reduce((a, b) => a.concat("", b) ));

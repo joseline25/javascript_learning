@@ -1,3 +1,5 @@
+const SCRIPTS = require("../scripts");
+
 function isEven(n) {
   if (n == 0) {
     return true;
@@ -121,10 +123,6 @@ repeat(3, (n) => {
   });
 });
 
-let arr = [3, 23, 5, 78];
-
-arr.forEach((l) => doubleVal(l)); // correct this
-
 /*
 
     Script data set
@@ -245,8 +243,200 @@ start reducing at the second element.
 */
 console.log([1, 2, 3, 4].reduce((a, b) => a + b));
 
+function characterCount(script) {
+  return script.ranges.reduce((count, [from, to]) => {
+    return count + (to - from);
+  }, 0);
+}
+
+console.log(
+  SCRIPTS.reduce((a, b) => {
+    return characterCount(a) < characterCount(b) ? b : a;
+  })
+);
 
 let my_char = "je me debrouille en javascript";
 console.log(my_char.split(" ").length);
 
-console.log(my_char.split(" ").reduce((a, b) => a.concat("", b) ));
+console.log(my_char.split(" ").reduce((a, b) => a.concat("", b)));
+
+// console.log(SCRIPTS);
+function characterScript(code) {
+  for (let script of SCRIPTS) {
+    if (
+      script.ranges.some(([from, to]) => {
+        return code >= from && code < to;
+      })
+    ) {
+      return script;
+    }
+  }
+  return null;
+}
+console.log(characterScript(121));
+
+/* 
+
+  Strings and character codes
+One use of the data set would be figuring out what script a piece of
+text is using. Let’s go through a program that does this.
+Remember that each script has an array of character code ranges
+associated with it. So given a character code, we could use a function
+like this to find the corresponding script (if any):
+
+*/
+
+function characterScript(code) {
+  for (let script of SCRIPTS) {
+    if (
+      script.ranges.some(([from, to]) => {
+        return code >= from && code < to;
+      })
+    ) {
+      return script;
+    }
+  }
+  return null;
+}
+
+console.log(characterScript(121));
+
+/* 
+  The some method is another higher-order function. It takes a test
+function and tells you whether that function returns true for any of the
+elements in the array.
+
+
+
+
+Recognizing text
+We have a characterScript function and a way to correctly loop over
+characters. The next step is to count the characters that belong to each
+script. The following counting abstraction will be useful there:
+
+
+*/
+
+function countBy(items, groupName) {
+  let counts = [];
+  for (let item of items) {
+    let name = groupName(item);
+    let known = counts.findIndex((c) => c.name == name);
+    if (known == -1) {
+      counts.push({ name, count: 1 });
+    } else {
+      counts[known].count++;
+    }
+  }
+  return counts;
+}
+console.log(countBy([1, 2, 3, 4, 5], (n) => n > 2));
+
+/*
+  The countBy function expects a collection (anything that we can loop
+over with for/of) and a function that computes a group name for a
+given element. It returns an array of objects, each of which names a
+group and tells you the number of elements that were found in that
+group.
+
+
+It uses another array method—findIndex. This method is somewhat
+like indexOf, but instead of looking for a specific value, it finds the first
+value for which the given function returns true. Like indexOf, it returns
+-1 when no such element is found.
+Using countBy, we can write the function that tells us which scripts
+are used in a piece of text.
+*/
+
+function textScripts(text) {
+  let scripts = countBy(text, (char) => {
+    let script = characterScript(char.codePointAt(0));
+    return script ? script.name : "none";
+  }).filter(({ name }) => name != "none");
+  let total = scripts.reduce((n, { count }) => n + count, 0);
+  if (total == 0) return "No scripts found";
+  return scripts
+    .map(({ name, count }) => {
+      return `${Math.round((count * 100) / total)}% ${name}`;
+    })
+    .join(", ");
+}
+console.log(textScripts('英国的狗说"woof", 俄罗斯的狗说"тяв"'));
+
+let arr = [3, 23, 5, 78];
+
+arr.forEach((l) => console.log(doubleVal(l)));
+
+/*
+  Summary
+
+  Arrays provide a number of useful higher-order methods. You can
+use forEach to loop over the elements in an array. The filter method
+returns a new array containing only the elements that pass the predicate function.
+ Transforming an array by putting each element through
+a function is done with map. You can use reduce to combine all the elements in an 
+array into a single value. The some method tests whether
+any element matches a given predicate function. And findIndex finds
+the position of the first element that matches a predicate.
+
+Exercises
+
+1 - Flattening
+
+Use the reduce method in combination with the concat method 
+to “flatten” an array of arrays into a single array that has all the elements of
+the original arrays.
+
+*/
+
+let array_of_arrays = [
+  [1, 2, 2],
+  [4, 3, 5],
+  [2, 3, 1],
+];
+
+function flattening(array_of_arrays) {
+  let new_array = array_of_arrays.reduce((arr1, arr2) => arr1.concat(arr2));
+
+  return new_array;
+}
+
+console.log(flattening(array_of_arrays));
+
+/*
+  Your own loop
+Write a higher-order function loop that provides something like a for
+loop statement. It takes a value, a test function, an update function,
+and a body function. Each iteration, it first runs the test function on
+the current loop value and stops if that returns false. Then it calls the
+body function, giving it the current value. Finally, it calls the update
+function to create a new value and starts from the beginning.
+When defining the function, you can use a regular loop to do the
+actual looping.
+
+*/
+
+function higherLoop(value, test_function, body_function, update_function) {
+  for (let index = 0; index < value; index++) {
+    if (test_function(index) == false) {
+      let current_value = index;
+      break;
+    }
+  }
+  let body_value = body_function(current_value);
+
+  return update_function(body_value);
+}
+
+/*
+
+  Everything
+Analogous to the some method, arrays also have an every method. This
+one returns true when the given function returns true for every element
+in the array. In a way, some is a version of the || operator that acts on
+arrays, and every is like the && operator.
+Implement every as a function that takes an array and a predicate
+function as parameters. Write two versions, one using a loop and one
+using the some method.
+
+*/

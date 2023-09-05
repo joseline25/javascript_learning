@@ -191,7 +191,7 @@ taking the "prototype" property of the constructor function.
 function Rabbitc(type) {
   this.type = type;
 }
-Rabbic.prototype.speak = function (line) {
+Rabbitc.prototype.speak = function (line) {
   console.log(`The ${this.type} rabbit says '${line}'`);
 };
 let weirdRabbit = new Rabbitc("weird");
@@ -225,5 +225,252 @@ class Rabbit {
 let killRabbit = new Rabbit("killer");
 let blackRabbit = new Rabbit("black");
 
-console.log(killRabbit.speak("Nooooo!!"))
-console.log(blackRabbit.speak("I'm dark!"))
+console.log(killRabbit.speak("Nooooo!!"));
+console.log(blackRabbit.speak("I'm dark!"));
+
+class Student {
+  // définition du constructeur
+  constructor(name, age, school) {
+    this.name = name;
+    this.age = age;
+    this.school = school;
+  }
+
+  // définition de quelques méthodes
+  presentation() {
+    console.log(
+      "je m'appelle ".concat(
+        this.name,
+        " ",
+        "j'ai ",
+        this.age,
+        " ",
+        "et je fréquente à l'école ",
+        this.school,
+        "."
+      )
+    );
+  }
+
+  myFuture() {
+    console.log(this.age + 5);
+  }
+}
+
+// instanciation de la nouvelle classe
+
+let studentOne = new Student("Joseline", 30, "Cassitech academy");
+
+// appel des méthodes de la classe sur l'objet
+studentOne.presentation();
+studentOne.myFuture();
+// get the prototype
+
+console.log(Object.getPrototypeOf(studentOne));
+
+/*
+  Overriding derived properties
+When you add a property to an object, whether it is present in the
+prototype or not, the property is added to the object itself. If there was
+already a property with the same name in the prototype, this property
+will no longer affect the object, as it is now hidden behind the object’s
+own property.
+
+C'est un peu comme le super de Python
+*/
+
+// je prototype un objet person à partir de studentOne
+
+let personOne = Object.create(studentOne);
+personOne.presentation();
+// overriding height property on personOne
+Student.prototype.height = 170;
+console.log(personOne.height); // 170
+personOne.height = 180;
+console.log(personOne.height); // 180
+
+/* Maps
+
+We saw the word map used in the previous chapter for an operation
+that transforms a data structure by applying a function to its elements.
+Confusing as it is, in programming the same word is also used for a
+related but rather different thing.
+A map (noun) is a data structure that associates values (the keys)
+with other values.
+
+For example, you might want to map names to ages.
+It is possible to use objects for this.
+*/
+
+let ages = {
+  Boris: 39,
+  Liang: 22,
+  Júlia: 62,
+};
+
+console.log(`Júlia is ${ages["Júlia"]}`);
+
+console.log("Is Jack's age known?", "Jack" in ages);
+
+console.log("Is toString's age known?", "toString" in ages); //true,  here is the PROBLEM!!!
+
+/*
+  Here, the object’s property names are the people’s names, and the
+property values are their ages. But we certainly didn’t list anybody
+named toString in our map. Yet, because plain objects derive from
+Object.prototype, it looks like the property is there.
+
+Solution
+
+As such, using plain objects as maps is dangerous. There are several
+possible ways to avoid this problem. First, it is possible to create objects
+with no prototype. If you pass null to Object.create, the resulting
+object will not derive from Object.prototype and can safely be used as
+a map.
+
+Object property names must be strings. If you need a map whose
+keys can’t easily be converted to strings—such as objects—you cannot
+use an object as your map.
+Fortunately, JavaScript comes with a class called Map that is written
+for this exact purpose. It stores a mapping and allows any type of keys
+*/
+
+let aages = new Map();
+aages.set("Boris", 39);
+aages.set("Liang", 22);
+aages.set("Júlia", 62);
+
+console.log(aages.has("toString")); // false
+
+/*
+  The methods set, get, and has are part of the interface of the Map
+object. Writing a data structure that can quickly update and search a
+large set of values isn’t easy, but we don’t have to worry about that.
+Someone else did it for us, and we can go through this simple interface
+to use their work.
+If you do have a plain object that you need to treat as a map for some
+reason, it is useful to know that Object.keys returns only an object’s
+own keys, not those in the prototype. As an alternative to the in
+operator, you can use the hasOwnProperty method, which ignores the
+object’s prototype.
+*/
+console.log(aages.get("Boris")); //39
+
+console.log(Object.keys(ages)); // [ 'Boris', 'Liang', 'Júlia' ]
+console.log("toString" in Object.keys(ages)); // true
+console.log(ages.hasOwnProperty("toString")); // false BINGO!!!
+
+/*
+  Polymorphism
+When you call the String function (which converts a value to a string)
+on an object, it will call the toString method on that object to try
+to create a meaningful string from it. 
+
+Comme personOne herite de studentOne, on va changer le comportement
+de la méthode presentation qu'il a hérité de studentOne
+*/
+
+personOne.presentation = function () {
+  return personOne.name.concat(" a ", personOne.age, " ans.");
+};
+
+console.log(personOne.presentation()); // Joseline a 30 ans.
+
+/*
+  property names are strings, but they can also be symbols. Symbols are
+values created with the Symbol function. Unlike strings, newly created
+symbols are unique—you cannot create the same symbol twice.
+*/
+
+let sym = Symbol("test");
+console.log(sym); // Symbol(test)
+let symTwo = Symbol("test");
+console.log(symTwo); // Symbol(test)
+
+Student.prototype[sym] = "je teste";
+console.log(studentOne[sym]);
+
+// approfondir la lecture sur les symboles
+
+/*
+The iterator interface
+
+The object given to a for/of loop is expected to be iterable. This means
+it has a method named with the Symbol.iterator symbol (a symbol value
+defined by the language, stored as a property of the Symbol function).
+
+When called, that method should return an object that provides a
+second interface, iterator. This is the actual thing that iterates. It has
+a next method that returns the next result. That result should be an
+object with a value property that provides the next value, if there is
+one, and a done property, which should be true when there are no more
+results and false otherwise.
+
+Note that the next, value, and done property names are plain strings,
+not symbols. Only Symbol.iterator, which is likely to be added to a lot
+of different objects, is an actual symbol.
+We can directly use this interface ourselves.
+
+*/
+
+let okIterator = "Joseline"[Symbol.iterator]();
+console.log(okIterator); // Object [String Iterator] {}
+console.log(okIterator.next()); // { value: 'J', done: false }
+console.log(okIterator.next()); // { value: 'o', done: false }
+console.log(okIterator.next()); // { value: 's', done: false }
+console.log(okIterator.next());
+console.log(okIterator.next());
+console.log(okIterator.next());
+console.log(okIterator.next());
+console.log(okIterator.next()); // { value: 'e', done: false }
+console.log(okIterator.next()); // { value: undefined, done: true }
+
+// on a loopé à travers le string "Joseline" avec .next()
+
+class Matrix {
+  constructor(width, height, element = (x, y) => undefined) {
+    this.width = width;
+    this.height = height;
+    this.content = [];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        this.content[y * width + x] = element(x, y);
+      }
+    }
+  }
+  get(x, y) {
+    return this.content[y * this.width + x];
+  }
+  set(x, y, value) {
+    this.content[y * this.width + x] = value;
+  }
+}
+
+let matrix = new Matrix(3, 4);
+
+class MatrixIterator {
+  constructor(matrix) {
+    this.x = 0;
+    this.y = 0;
+    this.matrix = matrix;
+  }
+  next() {
+    if (this.y == this.matrix.height) return { done: true };
+    let value = {
+      x: this.x,
+      y: this.y,
+      value: this.matrix.get(this.x, this.y),
+    };
+    this.x++;
+    if (this.x == this.matrix.width) {
+      this.x = 0;
+      this.y++;
+    }
+    return { value, done: false };
+  }
+}
+
+let mat = new MatrixIterator(matrix);
+mat.x = 3;
+mat.y = 4;
+console.log(mat.next());

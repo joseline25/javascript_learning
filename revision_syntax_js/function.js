@@ -574,3 +574,23 @@ function deepEqual(object_one, object_two) {
 }
 console.log(deepEqual(list, arrayToList([1, 2, 3, 4])));
 console.log(deepEqual(3, 4));
+
+// Rest parameters revision
+
+
+const sumTwo = (...numbers) => {
+  let result = 0;
+  for (let number of numbers) {
+    result += number;
+  }
+  return result;
+};
+console.log(sumTwo(2,3, 4, 5))
+
+const concatELements = (...elements) => {
+  
+  return [...elements];
+};
+console.log(concatELements(2, 3, 4, 5))
+let {name} = {name: "Faraji", age: 23};
+console.log(name);
